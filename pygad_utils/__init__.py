@@ -24,7 +24,13 @@ class LinearTransform:
         self.intercept = (v1 * g2 - v2 * g1) / (g2 - g1)
 
     def to_gene(self, value):
-        return (value - self.intercept) / self.slope
+        import pint
+
+        result = (value - self.intercept) / self.slope
+        if isinstance(result, pint.Quantity):
+            result = result.m_as('')
+
+        return result
 
     def to_value(self, gene):
         return self.slope * gene + self.intercept
@@ -134,3 +140,6 @@ class ParameterSpace:
             result[k] = self.parameters[k].to_value(gene)
 
         return result
+
+    def to_genes(self, parameters) -> tuple:
+        return tuple(self.parameters[k].to_gene(parameters[k]) for k in self.parameters)
