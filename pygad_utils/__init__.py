@@ -92,8 +92,8 @@ class ParameterSpace:
         self.parameters = {}
 
         for k, parameter in parameters.items():
-            to_value_function = getattr(parameter, "to_value", None)
-            to_gene_function = getattr(parameter, "to_gene", None)
+            to_value_function = getattr(parameter, 'to_value', None)
+            to_gene_function = getattr(parameter, 'to_gene', None)
             if to_value_function is not None and to_gene_function is not None:
                 self.parameters[k] = parameter
             else:
@@ -112,8 +112,9 @@ class ParameterSpace:
                 elif type == 'exp' or type == 'exponential':
                     self.parameters[k] = ExponentialTransform(gene_range, (v_min, v_max))
                 else:
-                    raise ValueError(f'Unknown transform type {type},'
-                                     'only exponential (exp) and linear (lin) are supported')
+                    raise ValueError(
+                        f'Unknown transform type {type},' 'only exponential (exp) and linear (lin) are supported'
+                    )
 
     def __len__(self):
         return len(self.parameters)
@@ -132,8 +133,10 @@ class ParameterSpace:
             the dictionary of the parameters corresponding to this gene
         """
         if len(genes) != len(self.parameters):
-            raise ValueError(f'The size {len(genes)} of the gene {genes} is not equal '
-                             f'to the size {len(self.parameters)} of the parameter space')
+            raise ValueError(
+                f'The size {len(genes)} of the gene {genes} is not equal '
+                f'to the size {len(self.parameters)} of the parameter space'
+            )
 
         result = {}
         for gene, k in zip(genes, self.parameters):
