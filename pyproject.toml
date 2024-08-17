@@ -1,6 +1,6 @@
 [project]
 name = "pygad_utils"
-version = "0.1.1"
+version = "0.2.0"
 description = "Utilities to work with PyGAD package for genetic algorithm optimization"
 authors = [
     {name = "Anton Golovanov"},

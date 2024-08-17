@@ -1,4 +1,4 @@
-import numpy as _np
+import numpy as np
 
 
 class LinearTransform:
@@ -55,14 +55,14 @@ class ExponentialTransform:
         g1, g2 = gene_range
         v1, v2 = value_range
 
-        self.exp_coeff = _np.log(v2 / v1) / (g2 - g1)
+        self.exp_coeff = np.log(v2 / v1) / (g2 - g1)
         self.coeff = v2 ** (g1 / (g2 - g1)) * v1 ** (g2 / (g2 - g1))
 
     def to_value(self, gene):
-        return self.coeff * _np.exp(self.exp_coeff * gene)
+        return self.coeff * np.exp(self.exp_coeff * gene)
 
     def to_gene(self, value):
-        return _np.log(value / self.coeff) / self.exp_coeff
+        return np.log(value / self.coeff) / self.exp_coeff
 
 
 class ParameterSpace:
@@ -146,3 +146,59 @@ class ParameterSpace:
 
     def to_genes(self, parameters) -> tuple:
         return tuple(self.parameters[k].to_gene(parameters[k]) for k in self.parameters)
+
+
+def initialize_population(
+    pop_size: int, num_genes: int, *, gene_range: tuple = (-4, 4), limiting_condition: callable = None
+) -> np.ndarray:
+    """
+    Creates a randomized population in the gene space satisfying the constraint specified by `limiting_condition`.
+
+    Parameters
+    ----------
+    pop_size : int
+        The size of the population
+    num_genes : int
+        The number of genes to be used
+    gene_range : tuple, optional
+        the , by default (-4, 4)
+    limiting_condition : callable, optional
+        a function which sets constrains on the genes (must return False for valid genes), by default None
+
+    Returns
+    -------
+    np.ndarray
+        2D array of shape (pop_size, num_genes) of the initial population
+    """
+    if len(gene_range) != 2:
+        raise ValueError(f'The gene_range parameter should be a pair of values, not {gene_range}')
+    g1, g2 = gene_range
+
+    population = np.zeros(shape=(pop_size, num_genes))
+    to_update = np.full(pop_size, True)
+
+    while np.any(to_update):
+        update_size = np.count_nonzero(to_update)
+        population[to_update] = g1 + (g2 - g1) * np.random.rand(update_size, num_genes)
+        if limiting_condition is not None:
+            to_update = limiting_condition(population)
+        else:
+            to_update[:] = False
+
+    return population
+
+
+def vectorize_gene_function(func: callable) -> callable:
+    """Changes the function applicable to one gene (1D array of values) to a function applicable to an array of genes (2D array of values).
+
+    Parameters
+    ----------
+    func : callable
+        the initial function
+
+    Returns
+    -------
+    callable
+        the modified function
+    """
+    return lambda arr: np.apply_along_axis(func, arr=arr, axis=1)
